@@ -6,10 +6,11 @@ const pathToDist = path.join(__dirname, 'project-dist');
 async function createIndexFileDist() {
   try {
     const pathToComponent = path.join(__dirname, 'components');
+    const pathToTemp = path.join(__dirname, 'template.html');
 
     await fs.promises.mkdir(pathToDist, { recursive: true });
 
-    let temp = await fs.promises.readFile('template.html', 'utf-8');
+    let temp = await fs.promises.readFile(pathToTemp, 'utf-8');
 
     const fileDist = path.join(pathToDist, 'index.html');
 
