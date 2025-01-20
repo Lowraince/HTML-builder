@@ -18,13 +18,7 @@ fs.readdir(pathToStyles, { withFileTypes: true }, (err, files) => {
     const streamRS = fs.createReadStream(fileStylePath, 'utf-8');
 
     if (file.isFile() && fileExt === '.css') {
-      streamRS.on('data', (chunk) => {
-        streamWS.write(chunk);
-      });
-
-      streamRS.on('end', () => {
-        streamWS.write('\n');
-      });
+      streamRS.pipe(streamWS, { end: false });
 
       streamRS.on('error', (err) => console.error('Error:', err.message));
     }
