@@ -4,46 +4,49 @@ const path = require('path');
 const pathToFolder = path.join(__dirname, 'files-copy');
 const pathToOrigin = path.join(__dirname, 'files');
 
-fs.mkdir(pathToFolder, { recursive: true }, (err) => {
-  if (err) {
-    throw err;
-  }
-});
+async function checkFolder() {
+  try {
+    await fs.promises.stat(pathToFolder);
 
-fs.readdir(pathToFolder, (err, files) => {
-  if (err) {
-    throw err;
+    await fs.promises.rm(pathToFolder, { recursive: true });
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.log('Директории нет.');
+    } else {
+      console.error('Check folder failed:', err);
+    }
   }
-  files.forEach((file) => {
-    const pathToFolderFiles = path.join(pathToFolder, file);
-    fs.unlink(pathToFolderFiles, (err) => {
-      if (err) console.error(err);
+}
+
+async function createCopy() {
+  try {
+    await fs.promises.mkdir(pathToFolder, { recursive: true });
+
+    const readOrigin = await fs.promises.readdir(pathToOrigin, {
+      withFileTypes: true,
     });
-  });
-});
 
-fs.readdir(pathToOrigin, { withFileTypes: true }, (err, files) => {
-  if (err) throw err;
-
-  files.forEach((file) => {
-    if (file.isFile()) {
+    for (const file of readOrigin) {
       const fileOriginPath = path.join(pathToOrigin, file.name);
       const fileCopyPath = path.join(pathToFolder, file.name);
 
       const streamRS = fs.createReadStream(fileOriginPath, 'utf-8');
       const streamWS = fs.createWriteStream(fileCopyPath);
 
-      streamRS.on('data', (chunk) => {
-        streamWS.write(chunk);
-      });
+      if (file.isFile()) {
+        streamRS.pipe(streamWS);
 
-      streamRS.on('end', () => {
-        streamWS.end();
-        console.log('End stream for:', file.name);
-      });
-
-      streamRS.on('error', (err) => console.error('Error:', err.message));
-      streamWS.on('error', (err) => console.error('Error:', err.message));
+        streamRS.on('error', (err) => console.error('Error:', err.message));
+      }
     }
-  });
-});
+  } catch (err) {
+    console.error('Create copy failed:', err);
+  }
+}
+
+async function main() {
+  await checkFolder();
+  await createCopy();
+}
+
+main();
