@@ -24,13 +24,7 @@ async function createIndexFileDist() {
 
       await new Promise((res, rej) => {
         readStream.on('data', (chunk) => {
-          if (pathName === 'articles') {
-            temp = temp.replace('{{articles}}', chunk);
-          } else if (pathName === 'footer') {
-            temp = temp.replace('{{footer}}', chunk);
-          } else if (pathName === 'header') {
-            temp = temp.replace('{{header}}', chunk);
-          }
+          temp = temp.replace(`{{${pathName}}}`, chunk);
         });
 
         readStream.on('end', () => {
