@@ -7,12 +7,9 @@ const pathToOrigin = path.join(__dirname, 'files');
 async function checkFolder() {
   try {
     await fs.promises.stat(pathToFolder);
-
     await fs.promises.rm(pathToFolder, { recursive: true });
   } catch (err) {
-    if (err.code === 'ENOENT') {
-      console.log('Директории нет.');
-    } else {
+    if (err.code !== 'ENOENT') {
       console.error('Check folder failed:', err);
     }
   }
